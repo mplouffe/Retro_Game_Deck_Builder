@@ -1,0 +1,27 @@
+
+#card01{
+	width: 100px;
+	height: 200px;
+	display: "block";
+	background-color: #0F0;
+	border: 2px #000 solid;
+	border-radius: 10px;
+	-webkit-transform: translate(0px, 0px);
+	transform: translate(0px, 0px);
+}
+
+#card02{
+	width: 100px;
+	height: 200px;
+	display: "block";
+	background-color: #F00;
+	-webkit-transform: translate(0px, 0px);
+	transform: translate(0px, 0px);
+}
+
+#container{
+	width: 800px;
+	height: 500px;
+	display: "block";
+	border: 1px #00F solid;
+}
