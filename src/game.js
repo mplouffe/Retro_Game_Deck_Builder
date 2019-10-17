@@ -2,7 +2,7 @@
  * Authored by: Matheu Plouffe
  * Version: 0.0
  * Date Started: 31/03/2016
- * Last Update: 31/03/2016
+ * Last Update: 16/10/2019
  */
 
 // SETTING UP
@@ -17,7 +17,6 @@ var card01mouseOut = function(){
 
 var card01Click = function(){
 	var card01 = document.getElementById("card01");
-	var card01PositonX = card01.
 	while(card01.mousedown)
 	{
 
@@ -26,12 +25,10 @@ var card01Click = function(){
 }
 // add event listeners to functions
 function onLoad() {
-	var firstDown = true;
-	var mouseX, mouseY;
 	document.getElementById("card01").addEventListener("mouseover",card01mouseOver);
 	document.getElementById("card01").addEventListener("mouseout", card01mouseOut);
 
-		interact('.draggable').draggable({
+	interact('.draggable').draggable({
 		// enable inertial throwing
 		inertia: true,
 		// keep he elent within the area of it's parent
@@ -56,7 +53,7 @@ function onLoad() {
 			y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
 
 		// translate the element
-		target.style.webkitTransform =
+		// target.style.webkitTransform =
 		target.style.transform = 'translate(' + x + 'px, ' + y + 'px)';
 
 		// update the position attributes
