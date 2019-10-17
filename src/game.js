@@ -15,18 +15,18 @@ var card01mouseOut = function(){
 	document.getElementById("card01").style.backgroundColor = "#0F0";
 }
 
-var card01Click = function(){
-	var card01 = document.getElementById("card01");
-	while(card01.mousedown)
-	{
-
-	}
-
+var cardHover = function(event){
+	event.target.parentNode.appendChild(event.target);
+	event.target.style.backgroundColor = "#000";
 }
+
 // add event listeners to functions
 function onLoad() {
-	document.getElementById("card01").addEventListener("mouseover",card01mouseOver);
+	document.getElementById("card01").addEventListener("mouseover",cardHover);
 	document.getElementById("card01").addEventListener("mouseout", card01mouseOut);
+	document.getElementById("card02").addEventListener("click", e => {
+		console.log("Sanity check");	
+	});
 
 	interact('.draggable').draggable({
 		// enable inertial throwing
@@ -47,7 +47,7 @@ function onLoad() {
 	});
 
 	function dragMoveListener(event){
-		var target = event.target,
+		let target = event.target,
 			// keep the dragged position in the data-x/data-y attributes
 			x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx,
 			y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
