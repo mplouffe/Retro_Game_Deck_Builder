@@ -2,65 +2,104 @@
  * Authored by: Matheu Plouffe
  * Version: 0.0
  * Date Started: 31/03/2016
- * Last Update: 16/10/2019
+ * Last Update: 17/10/2019
  */
 
 // SETTING UP
 // requestAnimationFrame
-var card01mouseOver = function() {
-	document.getElementById("card01").style.backgroundColor = "#000";
+// create scene
+var scene = new THREE.Scene();
+var sceneObjects = [];
+// create renderer instance
+let renderer = new THREE.WebGLRenderer();
+    // set up PerspectiveCamera
+    // Args: (FOV(in degrees), Aspect Ratio, near clipping plane, far clipping plane)
+    let camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 500);
+
+function vertexShader() {
+    return `
+        varying vec3 vUv;
+        
+        void main() {
+            vUv = position;
+            
+            vec4 modelViewPosition = modelViewMatrix * vec4(position, 1.0);
+            gl_Position = projectionMatrix * modelViewPosition;
+        }
+    `
 }
 
-var card01mouseOut = function(){
-	document.getElementById("card01").style.backgroundColor = "#0F0";
+function fragmentShader() {
+    return `
+        uniform vec3 colorA;
+        uniform vec3 colorB;
+        varying vec3 vUv;
+        
+        void main() {
+            gl_FragColor = vec4(mix(colorA, colorB, vUv.z), 1.0);        
+        }
+    `
 }
 
-var cardHover = function(event){
-	event.target.parentNode.appendChild(event.target);
-	event.target.style.backgroundColor = "#000";
+function addExperimentalCube() {
+    let uniforms = {
+        colorA: {type: 'vec3', value: new THREE.Color(0x00ccff)},
+        colorB: {type: 'vec3', value: new THREE.Color(0xcc00ff)}
+    }
+
+    let geometry = new THREE.BoxGeometry(1,1,1);
+    let material = new THREE.ShaderMaterial({
+        uniforms: uniforms,
+        fragmentShader: fragmentShader(),
+        vertexShader: vertexShader(),
+    });
+
+    let mesh = new THREE.Mesh(geometry, material);
+    mesh.position.y = 2;
+    scene.add(mesh);
+    sceneObjects.push(mesh);
+}
+
+function addLineDrawnArrow() {
+    let material = new THREE.LineBasicMaterial( { color: 0x00ccff });
+    let geometry = new THREE.Geometry();
+    geometry.vertices.push(new THREE.Vector3( -1, 0, 0));
+    geometry.vertices.push(new THREE.Vector3( 0, 1, 0));
+    geometry.vertices.push(new THREE.Vector3( 1, 0, 0));
+    geometry.vertices.push(new THREE.Vector3( 0.4, 0, 0));
+    geometry.vertices.push(new THREE.Vector3( 0.4, -1, 0));
+    geometry.vertices.push(new THREE.Vector3( -0.4, -1, 0));
+    geometry.vertices.push(new THREE.Vector3( -0.4, 0, 0));
+    geometry.vertices.push(new THREE.Vector3( -1, 0, 0));
+
+    let line = new THREE.Line( geometry, material );
+    scene.add( line );
+}
+
+// set up animation
+function animate() {
+    requestAnimationFrame( animate );
+    for(let object of sceneObjects)
+    {
+        object.rotation.x += 0.01;
+        object.rotation.y += 0.01;
+    }
+    renderer.render ( scene, camera );
 }
 
 // add event listeners to functions
 function onLoad() {
-	document.getElementById("card01").addEventListener("mouseover",cardHover);
-	document.getElementById("card01").addEventListener("mouseout", card01mouseOut);
-	document.getElementById("card02").addEventListener("click", e => {
-		console.log("Sanity check");	
-	});
+    // size to render the app
+    renderer.setSize( window.innerWidth, window.innerHeight );
+    // add renderer element to the HTML document
+    document.body.appendChild( renderer.domElement );
 
-	interact('.draggable').draggable({
-		// enable inertial throwing
-		inertia: true,
-		// keep he elent within the area of it's parent
-		restrict: {
-			restriction: "parent",
-			endOnly: true,
-			elementRect: { top: 0, left: 0, bottom: 1, right: 1}
-		},
-		// enable autoScroll
-		autoScroll: true,
+    camera.position.set( 0, 0, 10 );
+    camera.lookAt( 0, 0, 0 );
 
-		// call this function on every dragmove event
-		onmove: dragMoveListener,
-		// call this function on every dragend event
-		// onend: nothingHereYet
-	});
-
-	function dragMoveListener(event){
-		let target = event.target,
-			// keep the dragged position in the data-x/data-y attributes
-			x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx,
-			y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
-
-		// translate the element
-		// target.style.webkitTransform =
-		target.style.transform = 'translate(' + x + 'px, ' + y + 'px)';
-
-		// update the position attributes
-		target.setAttribute('data-x', x);
-		target.setAttribute('data-y', y);
-	}
-
+    addExperimentalCube();
+    addLineDrawnArrow();
+    animate();
 }
 // add document load event listener
 document.addEventListener("DOMContentLoaded", onLoad, false);
