@@ -2,6 +2,6 @@
 
 Simple deck building game prototype.
 
-Uses interact.js.
+Uses Three.js.
 
 Made with :blue_heart:
