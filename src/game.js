@@ -6,15 +6,45 @@
  */
 
 // SETTING UP
-// requestAnimationFrame
-// create scene
-var scene = new THREE.Scene();
+var camera, scene, renderer;
+var mouse, raycaster, isShiftDown = false;
 var sceneObjects = [];
-// create renderer instance
-let renderer = new THREE.WebGLRenderer();
-    // set up PerspectiveCamera
-    // Args: (FOV(in degrees), Aspect Ratio, near clipping plane, far clipping plane)
-    let camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 500);
+
+
+function init() {
+	// set up camera
+	camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 500);
+	camera.position.set(0, 0, 10);
+	camera.lookAt(0, 0, 0);
+
+	// create the scene
+	scene = new THREE.Scene();
+	scene.background = new THREE.Color(0xf0f0f0);
+
+	// set up mouse
+	raycaster = new THREE.Raycaster();
+	mouse = new THREE.Vector2();
+
+	// add lights
+	let ambientLight = new THREE.AmbientLight(0x606060);
+	scene.add(ambientLight);
+
+	let directionalLight = new THREE.DirectionalLight(0xffffff);
+	directionalLight.position.set(1, 0.75, 0.5).normalize();
+	scene.add(directionalLight);
+
+	// size to render the app
+	renderer = new THREE.WebGLRenderer( {antialias: true} );
+	renderer.setPixelRatio(window.devicePixelRatio);
+	renderer.setSize( window.innerWidth, window.innerHeight );
+
+	document.body.appendChild( renderer.domElement );
+
+	document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+    addExperimentalCard();
+    //addLineDrawnArrow();
+    animate();
+}
 
 function vertexShader() {
     return `
@@ -36,18 +66,19 @@ function fragmentShader() {
         varying vec3 vUv;
         
         void main() {
-            gl_FragColor = vec4(mix(colorA, colorB, vUv.z), 1.0);        
+            gl_FragColor = vec4(mix(colorA, colorB, vUv.z * 10.0), 1.0);        
         }
     `
 }
 
-function addExperimentalCube() {
+function addExperimentalCard() {
+	console.log("Adding experimental cube");
     let uniforms = {
         colorA: {type: 'vec3', value: new THREE.Color(0x00ccff)},
-        colorB: {type: 'vec3', value: new THREE.Color(0xcc00ff)}
+        colorB: {type: 'vec3', value: new THREE.Color(0xffffff)}
     }
 
-    let geometry = new THREE.BoxGeometry(1,1,1);
+    let geometry = new THREE.BoxGeometry(2,3.5,0.1);
     let material = new THREE.ShaderMaterial({
         uniforms: uniforms,
         fragmentShader: fragmentShader(),
@@ -55,7 +86,8 @@ function addExperimentalCube() {
     });
 
     let mesh = new THREE.Mesh(geometry, material);
-    mesh.position.y = 2;
+	mesh.position.y = 2;
+
     scene.add(mesh);
     sceneObjects.push(mesh);
 }
@@ -76,30 +108,30 @@ function addLineDrawnArrow() {
     scene.add( line );
 }
 
+function onDocumentMouseMove( event ) {
+	event.preventDefault();
+	mouse.set( (event.clientX / window.innerWidth ) * 2 - 1, - (event.clientY / window.innerHeight ) * 2 + 1);
+
+	raycaster.setFromCamera(mouse, camera);
+	let intersects = raycaster.intersectObjects(sceneObjects);
+
+	if (intersects.length > 0) {
+		for(let intersector of intersects)
+		{
+			intersector.object.rotation.y += 0.05;
+		}
+	}
+}
+
 // set up animation
 function animate() {
     requestAnimationFrame( animate );
     for(let object of sceneObjects)
     {
-        object.rotation.x += 0.01;
-        object.rotation.y += 0.01;
+        // object.rotation.y += 0.05;
     }
     renderer.render ( scene, camera );
 }
 
-// add event listeners to functions
-function onLoad() {
-    // size to render the app
-    renderer.setSize( window.innerWidth, window.innerHeight );
-    // add renderer element to the HTML document
-    document.body.appendChild( renderer.domElement );
-
-    camera.position.set( 0, 0, 10 );
-    camera.lookAt( 0, 0, 0 );
-
-    addExperimentalCube();
-    addLineDrawnArrow();
-    animate();
-}
 // add document load event listener
-document.addEventListener("DOMContentLoaded", onLoad, false);
+document.addEventListener("DOMContentLoaded", init, false);
