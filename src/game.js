@@ -14,7 +14,7 @@ var sceneObjects = [];
 function init() {
 	// set up camera
 	camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 500);
-	camera.position.set(0, 0, 10);
+	camera.position.set(0, 0, 30);
 	camera.lookAt(0, 0, 0);
 
 	// create the scene
@@ -40,7 +40,9 @@ function init() {
 
 	document.body.appendChild( renderer.domElement );
 
+    document.addEventListener( 'mousedown', onDocumentMouseDown, false);
 	document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+
     addExperimentalCard();
     //addLineDrawnArrow();
     animate();
@@ -109,7 +111,10 @@ function addLineDrawnArrow() {
 }
 
 function onDocumentMouseMove( event ) {
-	event.preventDefault();
+    event.preventDefault();
+    //console.log("clientX " + event.clientX + " clientY: " + event.clientY);
+    //mouse.set(event.clientX, event.clientY);
+
 	mouse.set( (event.clientX / window.innerWidth ) * 2 - 1, - (event.clientY / window.innerHeight ) * 2 + 1);
 
 	raycaster.setFromCamera(mouse, camera);
@@ -123,12 +128,26 @@ function onDocumentMouseMove( event ) {
 	}
 }
 
+function onDocumentMouseDown(event) {
+    console.log("clientX " + event.clientX + " clientY: " + event.clientY);
+    console.log("clientX " + ((event.clientX / window.innerWidth ) * 2 - 1) + " clientY: " +  - (event.clientY / window.innerHeight ) * 2 + 1);
+
+}
+
+var multiplier = 1;
 // set up animation
 function animate() {
     requestAnimationFrame( animate );
     for(let object of sceneObjects)
     {
-        // object.rotation.y += 0.05;
+        console.log(object.position.x);
+        let distance = 0.05;
+        if (object.position.x > 20) {
+            multiplier = -1;
+        } else if (object.position.x < -20) {
+            multiplier = 1;
+        }
+        object.position.x += distance * multiplier;
     }
     renderer.render ( scene, camera );
 }
