@@ -10,10 +10,12 @@ var camera, scene, renderer;
 var mouse, raycaster, isShiftDown = false;
 var sceneObjects = [];
 
+var frustumSize = 5;
+
 
 function init() {
 	// set up camera
-	camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 500);
+	camera = new THREE.PerspectiveCamera(45, 2, 1, 500);
 	camera.position.set(0, 0, 30);
 	camera.lookAt(0, 0, 0);
 
@@ -34,7 +36,10 @@ function init() {
 	scene.add(directionalLight);
 
 	// size to render the app
-	renderer = new THREE.WebGLRenderer( {antialias: true} );
+	renderer = new THREE.WebGLRenderer({
+		canvas: document.querySelector("canvas"),
+		antialias: true
+	});
 	renderer.setPixelRatio(window.devicePixelRatio);
 	renderer.setSize( window.innerWidth, window.innerHeight );
 
@@ -42,10 +47,28 @@ function init() {
 
     document.addEventListener( 'mousedown', onDocumentMouseDown, false);
 	document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+	window.addEventListener( 'resize', onWindowResize, false);
 
     addExperimentalCard();
     //addLineDrawnArrow();
     animate();
+}
+
+function resizeCanvasToDisplaySize() {
+	const canvas = renderer.domElement;
+	// look up the size the canvas is being displayed
+	const width = canvas.clientWidth;
+	const height = canvas.clientHeight;
+
+	// adjust displayBuffer size to match
+	if (canvas.width !== width || canvas.height !== height) {
+		// you must pass false here or three.js sadly fights the browser
+		renderer.setSize(width, height, false);
+		camera.aspect = width/height;
+		camera.updateProjectionMatrix();
+
+		// update any render target sizes here
+	}
 }
 
 function vertexShader() {
@@ -134,13 +157,26 @@ function onDocumentMouseDown(event) {
 
 }
 
+function onWindowResize() {
+	console.log("Resize");
+	let aspect = window.innerWidth / window.innerHeight;
+
+	camera.left = frustumSize * aspect / -2;
+	camera.right = frustumSize * aspect / 2;
+	camera.top = frustumSize / 2;
+	camera.bottom = frustumSize / 2;
+
+	camera.updateProjectionMatrix();
+	renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
 var multiplier = 1;
 // set up animation
-function animate() {
-    requestAnimationFrame( animate );
+function animate() {	
+	resizeCanvasToDisplaySize();
+
     for(let object of sceneObjects)
     {
-        console.log(object.position.x);
         let distance = 0.05;
         if (object.position.x > 20) {
             multiplier = -1;
@@ -149,7 +185,9 @@ function animate() {
         }
         object.position.x += distance * multiplier;
     }
-    renderer.render ( scene, camera );
+	renderer.render ( scene, camera );
+	
+	requestAnimationFrame( animate );
 }
 
 // add document load event listener
