@@ -54,17 +54,34 @@ function init() {
     animate();
 }
 
+function logVariable(objToLog) {
+    let name = Object.keys(objToLog)[0];
+    let value = objToLog[name];
+    console.log(name + ": " + value);
+}
+
 function resizeCanvasToDisplaySize() {
 	const canvas = renderer.domElement;
-	// look up the size the canvas is being displayed
-	const width = canvas.clientWidth;
-	const height = canvas.clientHeight;
+    // look up the size the canvas is being displayed
+    console.log(canvas);
+	const width = window.innerWidth;
+    const height = window.innerHeight;
+    
+    logVariable({width});
+    logVariable({height});
+
+    logVariable({"canvas.width": canvas.width});
+    logVariable({"canvas.height": canvas.height});
 
 	// adjust displayBuffer size to match
 	if (canvas.width !== width || canvas.height !== height) {
 		// you must pass false here or three.js sadly fights the browser
-		renderer.setSize(width, height, false);
-		camera.aspect = width/height;
+        renderer.setSize(width, height, false);
+        if (width > height){
+            camera.aspect = width / height;
+        } else {
+            camera.aspect = height / width;
+        }
 		camera.updateProjectionMatrix();
 
 		// update any render target sizes here
@@ -120,14 +137,10 @@ function addExperimentalCard() {
 function addLineDrawnArrow() {
     let material = new THREE.LineBasicMaterial( { color: 0x00ccff });
     let geometry = new THREE.Geometry();
-    geometry.vertices.push(new THREE.Vector3( -1, 0, 0));
-    geometry.vertices.push(new THREE.Vector3( 0, 1, 0));
-    geometry.vertices.push(new THREE.Vector3( 1, 0, 0));
-    geometry.vertices.push(new THREE.Vector3( 0.4, 0, 0));
-    geometry.vertices.push(new THREE.Vector3( 0.4, -1, 0));
-    geometry.vertices.push(new THREE.Vector3( -0.4, -1, 0));
-    geometry.vertices.push(new THREE.Vector3( -0.4, 0, 0));
-    geometry.vertices.push(new THREE.Vector3( -1, 0, 0));
+    geometry.vertices.push(new THREE.Vector3( -1, 1, 0));
+    geometry.vertices.push(new THREE.Vector3( 1, 1, 0));
+    geometry.vertices.push(new THREE.Vector3( 1, -1, 0));
+    geometry.vertices.push(new THREE.Vector3( -1, -1, 0));
 
     let line = new THREE.Line( geometry, material );
     scene.add( line );
@@ -163,17 +176,18 @@ function onWindowResize() {
 
 	camera.left = frustumSize * aspect / -2;
 	camera.right = frustumSize * aspect / 2;
-	camera.top = frustumSize / 2;
-	camera.bottom = frustumSize / 2;
+	camera.top = frustumSize * aspect / 2;
+	camera.bottom = frustumSize * aspect / 2;
 
 	camera.updateProjectionMatrix();
-	renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    //resizeCanvasToDisplaySize();
 }
 
 var multiplier = 1;
 // set up animation
 function animate() {	
-	resizeCanvasToDisplaySize();
+	// resizeCanvasToDisplaySize();
 
     for(let object of sceneObjects)
     {
