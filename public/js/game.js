@@ -6,6 +6,8 @@
  */
 
 // import * as THREE from 'three';
+var THREE = require('three');
+//var DragControls = require('three/examples/jsm/controls/DragControls.js');
 
 // SETTING UP
 var camera, scene, renderer;
@@ -57,7 +59,7 @@ function init() {
 	window.addEventListener( 'resize', onWindowResize, false);
 
 
-	// var controls = new THREE.DragControls( sceneObjects, camera, renderer.domElement );
+	// var controls = new DragControls( sceneObjects, camera, renderer.domElement );
 	// controls.addEventListener( 'dragstart', function ( event ) {
 	// 	event.object.material.emissive.set( 0xaaaaaa );
 	// } );
