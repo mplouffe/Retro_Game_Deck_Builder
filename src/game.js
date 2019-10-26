@@ -7,8 +7,13 @@
 
 // SETTING UP
 var camera, scene, renderer;
-var mouse, raycaster, isShiftDown = false;
+
+var mouse, isMouseDown, raycaster, isShiftDown = false;
+var intersected = null;
+
 var sceneObjects = [];
+
+var MAX_CARD_HEIGHT = 5;
 
 var frustumSize = 5;
 
@@ -49,8 +54,19 @@ function init() {
 	document.addEventListener( 'mousemove', onDocumentMouseMove, false );
 	window.addEventListener( 'resize', onWindowResize, false);
 
+
+	var controls = new THREE.DragControls( sceneObjects, camera, renderer.domElement );
+	controls.addEventListener( 'dragstart', function ( event ) {
+		event.object.material.emissive.set( 0xaaaaaa );
+	} );
+	controls.addEventListener( 'dragend', function ( event ) {
+		event.object.material.emissive.set( 0x000000 );
+	} );
+	stats = new THREE.Stats();
+	container.appendChild( stats.dom );
+
     addExperimentalCard();
-    //addLineDrawnArrow();
+    addLineDrawnSquare();
     animate();
 }
 
@@ -130,75 +146,83 @@ function addExperimentalCard() {
     let mesh = new THREE.Mesh(geometry, material);
 	mesh.position.y = 2;
 
+	mesh.type = "card";
     scene.add(mesh);
     sceneObjects.push(mesh);
 }
 
-function addLineDrawnArrow() {
+function addLineDrawnSquare() {
     let material = new THREE.LineBasicMaterial( { color: 0x00ccff });
     let geometry = new THREE.Geometry();
-    geometry.vertices.push(new THREE.Vector3( -1, 1, 0));
-    geometry.vertices.push(new THREE.Vector3( 1, 1, 0));
-    geometry.vertices.push(new THREE.Vector3( 1, -1, 0));
-    geometry.vertices.push(new THREE.Vector3( -1, -1, 0));
+    geometry.vertices.push(new THREE.Vector3( -17, 10, 0));
+    geometry.vertices.push(new THREE.Vector3( 17, 10, 0));
+    geometry.vertices.push(new THREE.Vector3( 17, -10, 0));
+	geometry.vertices.push(new THREE.Vector3( -17, -10, 0));
+	geometry.vertices.push(new THREE.Vector3( -17, 10, 0));
 
     let line = new THREE.Line( geometry, material );
     scene.add( line );
 }
+var oldEventPosition;
+function onDocumentMouseDown(event) {
+	event.preventDefault();
+	isMouseDown = true;
+	oldEventPosition = { "x": event.clientX, "y": event.clientY };
+	console.log(oldEventPosition);
+	// console.log("mouse.X" + mouse.x);
+	// console.log("mouse.Y" + mouse.y);
+	// console.log("clientX " + event.clientX + " clientY: " + event.clientY);
+    // console.log("clientX " + ((event.clientX / window.innerWidth ) * 2 - 1) + " clientY: " +  - (event.clientY / window.innerHeight ) * 2 + 1);
+}
+
+function onDocumentMouseClick(event) {
+	event.preventDefault();
+	isMouseDown = false;
+	oldEventPosition = {};
+}
 
 function onDocumentMouseMove( event ) {
-    event.preventDefault();
-    //console.log("clientX " + event.clientX + " clientY: " + event.clientY);
-    //mouse.set(event.clientX, event.clientY);
+	event.preventDefault();
+	
+	if (isMouseDown && intersected !== null) {
+		let differentalX = event.clientX - oldEventPosition.x;
+		let differentalY = event.clientY - oldEventPosition.y;
+		intersected.position.x += differentalX;
+		intersected.position.y += differentalY;
+	}
+	mouse.set( (event.clientX / window.innerWidth ) * 2 - 1, - (event.clientY / window.innerHeight ) * 2 + 1 );
+}
 
-	mouse.set( (event.clientX / window.innerWidth ) * 2 - 1, - (event.clientY / window.innerHeight ) * 2 + 1);
+function onWindowResize() {	
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+  
+    renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+var multiplier = 1;
+var oldIntersectedPoint;
+// set up animation
+function animate() {	
 
 	raycaster.setFromCamera(mouse, camera);
 	let intersects = raycaster.intersectObjects(sceneObjects);
 
 	if (intersects.length > 0) {
-		for(let intersector of intersects)
-		{
-			intersector.object.rotation.y += 0.05;
+		if ( intersected !== intersects[ 0 ] ) {
+			intersected = intersects[ 0 ];
+		}
+	} else {
+		if ( intersected !== null ) intersected.object.position.z = 0;
+		intersected = null;
+	}
+
+	if (intersected !== null) {
+		if( intersected.object.position.z < MAX_CARD_HEIGHT ) {
+			intersected.object.position.z += 0.5;
 		}
 	}
-}
 
-function onDocumentMouseDown(event) {
-    console.log("clientX " + event.clientX + " clientY: " + event.clientY);
-    console.log("clientX " + ((event.clientX / window.innerWidth ) * 2 - 1) + " clientY: " +  - (event.clientY / window.innerHeight ) * 2 + 1);
-
-}
-
-function onWindowResize() {
-	console.log("Resize");
-	let aspect = window.innerWidth / window.innerHeight;
-
-	camera.left = frustumSize * aspect / -2;
-	camera.right = frustumSize * aspect / 2;
-	camera.top = frustumSize * aspect / 2;
-	camera.bottom = frustumSize * aspect / 2;
-
-	camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    //resizeCanvasToDisplaySize();
-}
-
-var multiplier = 1;
-// set up animation
-function animate() {	
-	// resizeCanvasToDisplaySize();
-
-    for(let object of sceneObjects)
-    {
-        let distance = 0.05;
-        if (object.position.x > 20) {
-            multiplier = -1;
-        } else if (object.position.x < -20) {
-            multiplier = 1;
-        }
-        object.position.x += distance * multiplier;
-    }
 	renderer.render ( scene, camera );
 	
 	requestAnimationFrame( animate );
