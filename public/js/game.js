@@ -5,6 +5,10 @@
  * Last Update: 17/10/2019
  */
 
+// import * as THREE from 'three';
+var THREE = require('three');
+//var DragControls = require('three/examples/jsm/controls/DragControls.js');
+
 // SETTING UP
 var camera, scene, renderer;
 
@@ -55,15 +59,15 @@ function init() {
 	window.addEventListener( 'resize', onWindowResize, false);
 
 
-	var controls = new THREE.DragControls( sceneObjects, camera, renderer.domElement );
-	controls.addEventListener( 'dragstart', function ( event ) {
-		event.object.material.emissive.set( 0xaaaaaa );
-	} );
-	controls.addEventListener( 'dragend', function ( event ) {
-		event.object.material.emissive.set( 0x000000 );
-	} );
-	stats = new THREE.Stats();
-	container.appendChild( stats.dom );
+	// var controls = new DragControls( sceneObjects, camera, renderer.domElement );
+	// controls.addEventListener( 'dragstart', function ( event ) {
+	// 	event.object.material.emissive.set( 0xaaaaaa );
+	// } );
+	// controls.addEventListener( 'dragend', function ( event ) {
+	// 	event.object.material.emissive.set( 0x000000 );
+	// } );
+	// stats = new THREE.Stats();
+	// container.appendChild( stats.dom );
 
     addExperimentalCard();
     addLineDrawnSquare();
@@ -163,16 +167,13 @@ function addLineDrawnSquare() {
     let line = new THREE.Line( geometry, material );
     scene.add( line );
 }
+
 var oldEventPosition;
 function onDocumentMouseDown(event) {
 	event.preventDefault();
 	isMouseDown = true;
 	oldEventPosition = { "x": event.clientX, "y": event.clientY };
 	console.log(oldEventPosition);
-	// console.log("mouse.X" + mouse.x);
-	// console.log("mouse.Y" + mouse.y);
-	// console.log("clientX " + event.clientX + " clientY: " + event.clientY);
-    // console.log("clientX " + ((event.clientX / window.innerWidth ) * 2 - 1) + " clientY: " +  - (event.clientY / window.innerHeight ) * 2 + 1);
 }
 
 function onDocumentMouseClick(event) {
@@ -183,13 +184,6 @@ function onDocumentMouseClick(event) {
 
 function onDocumentMouseMove( event ) {
 	event.preventDefault();
-	
-	if (isMouseDown && intersected !== null) {
-		let differentalX = event.clientX - oldEventPosition.x;
-		let differentalY = event.clientY - oldEventPosition.y;
-		intersected.position.x += differentalX;
-		intersected.position.y += differentalY;
-	}
 	mouse.set( (event.clientX / window.innerWidth ) * 2 - 1, - (event.clientY / window.innerHeight ) * 2 + 1 );
 }
 
