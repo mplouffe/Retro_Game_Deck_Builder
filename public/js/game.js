@@ -2,25 +2,25 @@
  * Authored by: Matheu Plouffe
  * Version: 0.0
  * Date Started: 31/03/2016
- * Last Update: 17/10/2019
+ * Last Update: 27/10/2019
  */
 
-// import * as THREE from 'three';
-var THREE = require('three');
+import * as THREE from './three.module.js';
+import Stats from './stats.js';
+import { DragControls } from './DragControls.js';
+
 //var DragControls = require('three/examples/jsm/controls/DragControls.js');
 
 // SETTING UP
 var camera, scene, renderer;
 
-var mouse, isMouseDown, raycaster, isShiftDown = false;
+var stats;
+var mouse, raycaster;
 var intersected = null;
 
 var sceneObjects = [];
 
-var MAX_CARD_HEIGHT = 5;
-
-var frustumSize = 5;
-
+var MAX_CARD_HEIGHT = 2;
 
 function init() {
 	// set up camera
@@ -54,20 +54,20 @@ function init() {
 
 	document.body.appendChild( renderer.domElement );
 
-    document.addEventListener( 'mousedown', onDocumentMouseDown, false);
 	document.addEventListener( 'mousemove', onDocumentMouseMove, false );
 	window.addEventListener( 'resize', onWindowResize, false);
 
 
-	// var controls = new DragControls( sceneObjects, camera, renderer.domElement );
-	// controls.addEventListener( 'dragstart', function ( event ) {
-	// 	event.object.material.emissive.set( 0xaaaaaa );
-	// } );
-	// controls.addEventListener( 'dragend', function ( event ) {
-	// 	event.object.material.emissive.set( 0x000000 );
-	// } );
-	// stats = new THREE.Stats();
-	// container.appendChild( stats.dom );
+	var controls = new DragControls( sceneObjects, camera, renderer.domElement );
+	controls.addEventListener( 'dragstart', function ( event ) {
+
+	} );
+	controls.addEventListener( 'dragend', function ( event ) {
+
+    } );
+    
+	stats = new Stats();
+	document.body.appendChild( stats.dom );
 
     addExperimentalCard();
     addLineDrawnSquare();
@@ -78,34 +78,6 @@ function logVariable(objToLog) {
     let name = Object.keys(objToLog)[0];
     let value = objToLog[name];
     console.log(name + ": " + value);
-}
-
-function resizeCanvasToDisplaySize() {
-	const canvas = renderer.domElement;
-    // look up the size the canvas is being displayed
-    console.log(canvas);
-	const width = window.innerWidth;
-    const height = window.innerHeight;
-    
-    logVariable({width});
-    logVariable({height});
-
-    logVariable({"canvas.width": canvas.width});
-    logVariable({"canvas.height": canvas.height});
-
-	// adjust displayBuffer size to match
-	if (canvas.width !== width || canvas.height !== height) {
-		// you must pass false here or three.js sadly fights the browser
-        renderer.setSize(width, height, false);
-        if (width > height){
-            camera.aspect = width / height;
-        } else {
-            camera.aspect = height / width;
-        }
-		camera.updateProjectionMatrix();
-
-		// update any render target sizes here
-	}
 }
 
 function vertexShader() {
@@ -168,20 +140,6 @@ function addLineDrawnSquare() {
     scene.add( line );
 }
 
-var oldEventPosition;
-function onDocumentMouseDown(event) {
-	event.preventDefault();
-	isMouseDown = true;
-	oldEventPosition = { "x": event.clientX, "y": event.clientY };
-	console.log(oldEventPosition);
-}
-
-function onDocumentMouseClick(event) {
-	event.preventDefault();
-	isMouseDown = false;
-	oldEventPosition = {};
-}
-
 function onDocumentMouseMove( event ) {
 	event.preventDefault();
 	mouse.set( (event.clientX / window.innerWidth ) * 2 - 1, - (event.clientY / window.innerHeight ) * 2 + 1 );
@@ -194,8 +152,6 @@ function onWindowResize() {
     renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
-var multiplier = 1;
-var oldIntersectedPoint;
 // set up animation
 function animate() {	
 
@@ -217,7 +173,9 @@ function animate() {
 		}
 	}
 
-	renderer.render ( scene, camera );
+    renderer.render ( scene, camera );
+    
+    stats.update()
 	
 	requestAnimationFrame( animate );
 }
