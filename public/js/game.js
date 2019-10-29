@@ -8,6 +8,7 @@
 import * as THREE from './three.module.js';
 import Stats from './stats.js';
 import { DragControls } from './DragControls.js';
+import { Card } from './card.js';
 
 //var DragControls = require('three/examples/jsm/controls/DragControls.js');
 
@@ -60,10 +61,10 @@ function init() {
 
 	var controls = new DragControls( sceneObjects, camera, renderer.domElement );
 	controls.addEventListener( 'dragstart', function ( event ) {
-
+		console.log(event);
 	} );
 	controls.addEventListener( 'dragend', function ( event ) {
-
+		console.log(event);
     } );
     
 	stats = new Stats();
@@ -121,8 +122,10 @@ function addExperimentalCard() {
 
     let mesh = new THREE.Mesh(geometry, material);
 	mesh.position.y = 2;
+	
+	let cardInfo = new Card("demoCard");
+	mesh.userData.cardInfo = cardInfo;
 
-	mesh.type = "card";
     scene.add(mesh);
     sceneObjects.push(mesh);
 }
