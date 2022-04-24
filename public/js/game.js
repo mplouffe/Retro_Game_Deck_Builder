@@ -2,15 +2,13 @@
  * Authored by: Matheu Plouffe
  * Version: 0.0
  * Date Started: 31/03/2016
- * Last Update: 27/10/2019
+ * Last Update: 24/04/2022
  */
 
 import * as THREE from './three.module.js';
 import Stats from './stats.js';
 import { DragControls } from './DragControls.js';
 import { Card } from './card.js';
-
-//var DragControls = require('three/examples/jsm/controls/DragControls.js');
 
 // SETTING UP
 var camera, scene, renderer;
@@ -21,7 +19,8 @@ var intersected = null;
 
 var sceneObjects = [];
 
-var MAX_CARD_HEIGHT = 2;
+const MAX_CARD_SCALE = 1.5;
+const CARD_SCALE_FACTOR = 0.05;
 
 function init() {
 	// set up camera
@@ -61,10 +60,10 @@ function init() {
 
 	var controls = new DragControls( sceneObjects, camera, renderer.domElement );
 	controls.addEventListener( 'dragstart', function ( event ) {
-		console.log(event);
+
 	} );
 	controls.addEventListener( 'dragend', function ( event ) {
-		console.log(event);
+
     } );
     
 	stats = new Stats();
@@ -166,13 +165,17 @@ function animate() {
 			intersected = intersects[ 0 ];
 		}
 	} else {
-		if ( intersected !== null ) intersected.object.position.z = 0;
+		if ( intersected !== null ) {
+			intersected.object.scale.x = 1;
+			intersected.object.scale.y = 1;
+		}
 		intersected = null;
 	}
 
 	if (intersected !== null) {
-		if( intersected.object.position.z < MAX_CARD_HEIGHT ) {
-			intersected.object.position.z += 0.5;
+		if( intersected.object.scale.x < MAX_CARD_SCALE ) {
+			intersected.object.scale.x += CARD_SCALE_FACTOR;
+			intersected.object.scale.y += CARD_SCALE_FACTOR;
 		}
 	}
 
